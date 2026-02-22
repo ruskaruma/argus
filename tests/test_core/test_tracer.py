@@ -218,3 +218,87 @@ def test_get_events_no_filter_returns_copy():
     result = t.get_events()
     result.clear()
     assert len(t.get_events()) == 1
+
+
+def test_exception_inside_span_records_event():
+    t = Tracer()
+    with __import__("pytest").raises(ValueError), t.span("failing"):  # noqa: SIM117
+        raise ValueError("boom")
+    assert len(t.events) == 1
+    e = t.events[0]
+    assert e.name == "failing"
+    assert e.end_ns >= e.start_ns
+
+
+def test_exception_inside_span_parent_stack_clean():
+    t = Tracer()
+    with __import__("pytest").raises(ValueError), t.span("outer"):  # noqa: SIM117
+        with t.span("inner"):
+            raise ValueError("boom")
+    assert t._parent_stack == []
+    with t.span("after"):
+        pass
+    assert t.events[-1].parent_id is None
+
+
+def test_span_without_enter_does_not_corrupt_stack():
+    t = Tracer()
+    _ = t.span("never_entered")
+    assert t._parent_stack == []
+    with t.span("normal"):
+        pass
+    assert t._parent_stack == []
+    assert t.events[0].parent_id is None
+
+
+def test_double_exit_does_not_crash():
+    t = Tracer()
+    ctx = t.span("op")
+    ctx.__enter__()
+    ctx.__exit__(None, None, None)
+    ctx.__exit__(None, None, None)
+    assert len(t.events) == 2
+    assert t._parent_stack == []
+
+
+def test_reset_while_span_open_exit_does_not_crash():
+    t = Tracer()
+    ctx = t.span("op")
+    ctx.__enter__()
+    t.reset()
+    ctx.__exit__(None, None, None)
+    assert len(t._events) == 1
+    assert t._parent_stack == []
+
+
+def test_record_event():
+    from argus.core.events import TraceEvent
+
+    t = Tracer()
+    event = TraceEvent(
+        event_id="custom",
+        name="manual",
+        start_ns=100,
+        end_ns=200,
+        category="compute",
+        scope="test",
+    )
+    t.record_event(event)
+    assert len(t.events) == 1
+    assert t.events[0].event_id == "custom"
+
+
+def test_instant_event():
+    t = Tracer()
+    event = t.instant("marker", category="system", scope="test", metadata={"k": "v"})
+    assert event.duration_ns == 0
+    assert event.name == "marker"
+    assert event.metadata == {"k": "v"}
+    assert len(t.events) == 1
+
+
+def test_instant_inside_span_gets_parent():
+    t = Tracer()
+    with t.span("outer") as ctx:
+        event = t.instant("point")
+    assert event.parent_id == ctx.event_id

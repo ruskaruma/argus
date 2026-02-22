@@ -26,6 +26,10 @@ classifiers = [
 ]
 dependencies = []
 
+[project.urls]
+Homepage = "https://github.com/ruskaruma/argus"
+Repository = "https://github.com/ruskaruma/argus"
+
 [project.optional-dependencies]
 pytorch = ["torch>=2.0"]
 dev = [
