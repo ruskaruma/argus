@@ -18,6 +18,7 @@ CATEGORY_TO_TID: dict[str, int] = {
 }
 
 _VALID_CATEGORIES = frozenset(CATEGORY_TO_TID)
+_RESERVED_ARGS = frozenset({"event_id", "scope", "parent_id", "token_index"})
 
 
 def _event_to_chrome(event: TraceEvent) -> dict[str, Any]:
@@ -29,18 +30,16 @@ def _event_to_chrome(event: TraceEvent) -> dict[str, Any]:
 
     args: dict[str, Any] = {}
     for k, v in event.metadata.items():
+        if k in _RESERVED_ARGS:
+            continue
         if not isinstance(v, (dict, list, set, tuple)):
             args[k] = v
     args["event_id"] = event.event_id
     args["scope"] = event.scope
     if event.parent_id is not None:
         args["parent_id"] = event.parent_id
-    else:
-        args.pop("parent_id", None)
     if event.token_index is not None:
         args["token_index"] = event.token_index
-    else:
-        args.pop("token_index", None)
 
     is_counter = event.category == "memory" and event.duration_ns == 0
 
