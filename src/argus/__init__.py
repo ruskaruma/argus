@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 __all__ = ["TraceEvent", "Tracer", "export_chrome", "monotonic_ns"]
+
 __version__ = "0.1.0"
 
 

@@ -2,9 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from argus.core.clock import monotonic_ns
-from argus.core.events import TraceEvent
-
 if TYPE_CHECKING:
     from argus.core.tracer import Tracer
 
@@ -32,13 +29,8 @@ class KVCacheTracker:
 
     def record(self, past_key_values: object, token_index: int) -> None:
         cache_bytes, num_layers = _compute_kv_cache_bytes(past_key_values)
-        now = monotonic_ns()
-        event_id = self._tracer._generate_id()
-        event = TraceEvent(
-            event_id=event_id,
+        self._tracer.instant(
             name="kv_cache_grow",
-            start_ns=now,
-            end_ns=now,
             category="memory",
             scope=f"decode.token.{token_index}",
             token_index=token_index,
@@ -48,4 +40,3 @@ class KVCacheTracker:
                 "token_index": token_index,
             },
         )
-        self._tracer._events.append(event)

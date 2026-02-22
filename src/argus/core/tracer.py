@@ -30,8 +30,6 @@ class SpanContext:
         scope: str,
         metadata: dict[str, Any],
         token_index: int | None,
-        parent_id: str | None,
-        start_ns: int,
     ) -> None:
         self._tracer = tracer
         self._event_id = event_id
@@ -40,8 +38,8 @@ class SpanContext:
         self._scope = scope
         self._metadata = metadata
         self._token_index = token_index
-        self._parent_id = parent_id
-        self._start_ns = start_ns
+        self._parent_id: str | None = None
+        self._start_ns: int = 0
 
     @property
     def event_id(self) -> str:
@@ -51,6 +49,9 @@ class SpanContext:
         self._metadata[key] = value
 
     def __enter__(self) -> SpanContext:
+        self._parent_id = self._tracer._parent_stack[-1] if self._tracer._parent_stack else None
+        self._tracer._parent_stack.append(self._event_id)
+        self._start_ns = monotonic_ns()
         return self
 
     def __exit__(self, *_: object) -> None:
@@ -69,7 +70,8 @@ class SpanContext:
             metadata=dict(self._metadata),
         )
         self._tracer._events.append(event)
-        self._tracer._parent_stack.pop()
+        if self._tracer._parent_stack and self._tracer._parent_stack[-1] == self._event_id:
+            self._tracer._parent_stack.pop()
 
 
 class Tracer:
@@ -100,9 +102,6 @@ class Tracer:
     ) -> SpanContext:
         """Open a traced span. Use as a context manager."""
         event_id = self._generate_id()
-        parent_id = self._parent_stack[-1] if self._parent_stack else None
-        self._parent_stack.append(event_id)
-        start_ns = monotonic_ns()
         return SpanContext(
             tracer=self,
             event_id=event_id,
@@ -111,9 +110,35 @@ class Tracer:
             scope=scope,
             metadata=metadata if metadata is not None else {},
             token_index=token_index,
-            parent_id=parent_id,
-            start_ns=start_ns,
         )
+
+    def record_event(self, event: TraceEvent) -> None:
+        """Append a pre-built TraceEvent. Public API for hooks."""
+        self._events.append(event)
+
+    def instant(
+        self,
+        name: str,
+        category: str = "compute",
+        scope: str = "",
+        metadata: dict[str, Any] | None = None,
+        token_index: int | None = None,
+    ) -> TraceEvent:
+        """Record a zero-duration point-in-time event."""
+        now = monotonic_ns()
+        event = TraceEvent(
+            event_id=self._generate_id(),
+            name=name,
+            start_ns=now,
+            end_ns=now,
+            category=category,
+            scope=scope,
+            parent_id=self._parent_stack[-1] if self._parent_stack else None,
+            token_index=token_index,
+            metadata=metadata if metadata is not None else {},
+        )
+        self._events.append(event)
+        return event
 
     @property
     def events(self) -> list[TraceEvent]:
