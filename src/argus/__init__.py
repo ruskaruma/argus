@@ -8,11 +8,18 @@ from argus.core.clock import monotonic_ns
 from argus.core.events import TraceEvent
 from argus.core.tracer import Tracer
 from argus.exporters.chrome import export_chrome_trace
+from argus.exporters.flamegraph import export_flamegraph
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-__all__ = ["TraceEvent", "Tracer", "export_chrome", "monotonic_ns"]
+__all__ = [
+    "TraceEvent",
+    "Tracer",
+    "export_chrome",
+    "export_flamegraph",
+    "monotonic_ns",
+]
 
 __version__ = "0.1.0"
 
