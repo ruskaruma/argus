@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import IO, TYPE_CHECKING
 
+from argus.analysis.diff import TraceDiff, diff_traces, export_diff_chrome
 from argus.core.clock import monotonic_ns
 from argus.core.events import TraceEvent
 from argus.core.tracer import Tracer
@@ -12,7 +13,15 @@ from argus.exporters.chrome import export_chrome_trace
 if TYPE_CHECKING:
     from pathlib import Path
 
-__all__ = ["TraceEvent", "Tracer", "export_chrome", "monotonic_ns"]
+__all__ = [
+    "TraceDiff",
+    "TraceEvent",
+    "Tracer",
+    "diff_traces",
+    "export_chrome",
+    "export_diff_chrome",
+    "monotonic_ns",
+]
 
 __version__ = "0.1.0"
 
