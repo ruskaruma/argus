@@ -23,7 +23,8 @@ class FakeTensor:
 def _make_kv(num_layers: int = 2, numel: int = 1024, elem_size: int = 2):
     """Build fake past_key_values: tuple of (key, value) tuples per layer."""
     return tuple(
-        (FakeTensor(numel, elem_size), FakeTensor(numel, elem_size)) for _ in range(num_layers)
+        (FakeTensor(numel, elem_size), FakeTensor(numel, elem_size))
+        for _ in range(num_layers)
     )
 
 

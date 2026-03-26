@@ -177,7 +177,9 @@ def test_no_pretty_printing():
 
 
 def test_metadata_key_collision():
-    e = _make_event(event_id="real_id", metadata={"event_id": "fake_id", "scope": "fake"})
+    e = _make_event(
+        event_id="real_id", metadata={"event_id": "fake_id", "scope": "fake"}
+    )
     chrome = events_to_chrome([e])[0]
     assert chrome["args"]["event_id"] == "real_id"
     assert chrome["args"]["scope"] == "test"
