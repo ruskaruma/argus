@@ -8,11 +8,19 @@ from argus.core.clock import monotonic_ns
 from argus.core.events import TraceEvent
 from argus.core.tracer import Tracer
 from argus.exporters.chrome import export_chrome_trace
+from argus.hooks.layers import LayerHookHandle, register_layer_hooks
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-__all__ = ["TraceEvent", "Tracer", "export_chrome", "monotonic_ns"]
+__all__ = [
+    "LayerHookHandle",
+    "TraceEvent",
+    "Tracer",
+    "export_chrome",
+    "monotonic_ns",
+    "register_layer_hooks",
+]
 
 __version__ = "0.1.0"
 
