@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from argus.core.tracer import Tracer
@@ -8,17 +8,17 @@ if TYPE_CHECKING:
 
 
 def trace_generate(
-    model: object,
-    input_ids: object,
+    model: Any,
+    input_ids: Any,
     tracer: Tracer,
     max_new_tokens: int = 128,
     kv_tracker: KVCacheTracker | None = None,
-) -> object:
+) -> Any:
     """Trace a model's greedy decode loop with token-level spans.
 
     Reimplements greedy decode — does not call model.generate().
     """
-    import torch
+    import torch  # type: ignore[import-not-found]
 
     generated = input_ids.clone()
     past_key_values = None

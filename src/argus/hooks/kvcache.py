@@ -10,7 +10,7 @@ def _compute_kv_cache_bytes(past_key_values: object) -> tuple[int, int]:
     """Returns (total_bytes, num_layers) from KV cache tensors."""
     total = 0
     num_layers = 0
-    for layer_kv in past_key_values:  # type: ignore[union-attr]
+    for layer_kv in past_key_values:  # type: ignore[attr-defined]
         num_layers += 1
         for tensor in layer_kv:
             if tensor is None:
