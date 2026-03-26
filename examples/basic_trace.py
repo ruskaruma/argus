@@ -7,13 +7,17 @@ def main():
     tracer = argus.Tracer()
 
     with tracer.span("full_pipeline", category="phase", scope="pipeline"):
-        with tracer.span("preprocessing", category="compute", scope="pipeline.preprocess"):
+        with tracer.span(
+            "preprocessing", category="compute", scope="pipeline.preprocess"
+        ):
             data = list(range(1000))
 
         with tracer.span("inference", category="compute", scope="pipeline.inference"):
             result = sum(data)
 
-        with tracer.span("postprocessing", category="compute", scope="pipeline.postprocess"):
+        with tracer.span(
+            "postprocessing", category="compute", scope="pipeline.postprocess"
+        ):
             output = str(result)
 
     print(f"Collected {len(tracer.events)} events")

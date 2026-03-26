@@ -49,7 +49,9 @@ class SpanContext:
         self._metadata[key] = value
 
     def __enter__(self) -> SpanContext:
-        self._parent_id = self._tracer._parent_stack[-1] if self._tracer._parent_stack else None
+        self._parent_id = (
+            self._tracer._parent_stack[-1] if self._tracer._parent_stack else None
+        )
         self._tracer._parent_stack.append(self._event_id)
         self._start_ns = monotonic_ns()
         return self
@@ -70,7 +72,10 @@ class SpanContext:
             metadata=dict(self._metadata),
         )
         self._tracer._events.append(event)
-        if self._tracer._parent_stack and self._tracer._parent_stack[-1] == self._event_id:
+        if (
+            self._tracer._parent_stack
+            and self._tracer._parent_stack[-1] == self._event_id
+        ):
             self._tracer._parent_stack.pop()
 
 

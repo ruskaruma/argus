@@ -3,7 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-VALID_CATEGORIES = frozenset({"compute", "memory", "phase", "token", "kernel", "system"})
+VALID_CATEGORIES = frozenset(
+    {"compute", "memory", "phase", "token", "kernel", "system"}
+)
 
 
 @dataclass(frozen=True, slots=True)
